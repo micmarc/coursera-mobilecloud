@@ -31,6 +31,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.magnum.dataup.model.Video;
 import org.magnum.dataup.model.VideoStatus;
+import org.magnum.dataup.model.VideoStatus.VideoState;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -41,8 +42,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.multipart.MultipartFile;
-
-import retrofit.client.Response;
 
 @Controller
 public class VideoController {
@@ -76,15 +75,38 @@ public class VideoController {
 	}
 
 	@RequestMapping(value=VIDEO_DATA_PATH, method=RequestMethod.POST)
-	public @ResponseBody VideoStatus setVideoData(@PathVariable("id") long id, @RequestParam MultipartFile videoData) {
-		// TODO Auto-generated method stub
-		return null;
+	public @ResponseBody VideoStatus setVideoData(
+			@PathVariable("id") long id, 
+			@RequestParam("data") MultipartFile videoData,
+			HttpServletResponse response) throws IOException {
+		
+		Video v = videos.get(id);
+		if (v == null) {
+			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+			return null;
+		}
+		
+		// Attempt to set video data
+		saveVideo(v, videoData);
+		
+		return new VideoStatus(VideoState.READY);
 	}
 
 	@RequestMapping(value=VIDEO_DATA_PATH, method=RequestMethod.GET)
-	public Response getData(@PathVariable("id") long id) {
-		// TODO Auto-generated method stub
-		return null;
+	public @ResponseBody Video getVideoData(
+			@PathVariable("id") long id, 
+			HttpServletResponse response) throws IOException {
+		
+		Video v = videos.get(id);
+		if (v == null) {
+			response.sendError(HttpServletResponse.SC_NOT_FOUND);
+			return null;
+		}
+		
+		// Attempt to serve video
+		serveVideo(v, response);
+		
+		return v;
 	}
 
 	private void generateAndSetDataUrl(final Video v) {
@@ -115,12 +137,14 @@ public class VideoController {
 	}
 
 	private void saveVideo(Video v, MultipartFile videoData) throws IOException {
-         videoDataMgr.saveVideoData(v, videoData.getInputStream());
-    }
+		videoDataMgr.saveVideoData(v, videoData.getInputStream());
+	}
 
-    private void serveVideo(Video v, HttpServletResponse response) throws IOException {
-         // TODO send headers, etc. to the client
-         videoDataMgr.copyVideoData(v, response.getOutputStream());
-    }
-	
+	private void serveVideo(Video v, HttpServletResponse response) throws IOException {
+		// Set appropriate headers.
+		response.addHeader("Content-Type", v.getContentType());
+		
+		videoDataMgr.copyVideoData(v, response.getOutputStream());
+	}
+
 }

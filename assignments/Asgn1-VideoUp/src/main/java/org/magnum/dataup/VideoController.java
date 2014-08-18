@@ -17,8 +17,7 @@
  */
 package org.magnum.dataup;
 
-import static org.magnum.dataup.VideoSvcApi.VIDEO_DATA_PATH;
-import static org.magnum.dataup.VideoSvcApi.VIDEO_SVC_PATH;
+import static org.magnum.dataup.VideoSvcApi.*;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -76,8 +75,8 @@ public class VideoController {
 
 	@RequestMapping(value=VIDEO_DATA_PATH, method=RequestMethod.POST)
 	public @ResponseBody VideoStatus setVideoData(
-			@PathVariable("id") long id, 
-			@RequestParam("data") MultipartFile videoData,
+			@PathVariable(ID_PARAMETER) long id, 
+			@RequestParam(DATA_PARAMETER) MultipartFile videoData,
 			HttpServletResponse response) throws IOException {
 		
 		Video v = videos.get(id);
@@ -93,20 +92,18 @@ public class VideoController {
 	}
 
 	@RequestMapping(value=VIDEO_DATA_PATH, method=RequestMethod.GET)
-	public @ResponseBody Video getVideoData(
-			@PathVariable("id") long id, 
+	public void getVideoData(
+			@PathVariable(ID_PARAMETER) long id, 
 			HttpServletResponse response) throws IOException {
 		
 		Video v = videos.get(id);
 		if (v == null) {
-			response.sendError(HttpServletResponse.SC_NOT_FOUND);
-			return null;
+			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+			return;
 		}
 		
 		// Attempt to serve video
 		serveVideo(v, response);
-		
-		return v;
 	}
 
 	private void generateAndSetDataUrl(final Video v) {

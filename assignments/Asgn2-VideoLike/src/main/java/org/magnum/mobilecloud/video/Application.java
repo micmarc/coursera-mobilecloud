@@ -1,33 +1,24 @@
 package org.magnum.mobilecloud.video;
 
 import org.magnum.mobilecloud.video.auth.OAuth2SecurityConfiguration;
+import org.magnum.mobilecloud.video.repository.VideoRepository;
+
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
-//Tell Spring to automatically inject any dependencies that are marked in
-//our classes with @Autowired
 @EnableAutoConfiguration
-// Tell Spring to turn on WebMVC (e.g., it should enable the DispatcherServlet
-// so that requests can be routed to our Controllers)
+@EnableJpaRepositories(basePackageClasses = VideoRepository.class)
 @EnableWebMvc
-// Tell Spring that this object represents a Configuration for the
-// application
 @Configuration
-// Tell Spring to go and scan our controller package (and all sub packages) to
-// find any Controllers or other components that are part of our applciation.
-// Any class in this package that is annotated with @Controller is going to be
-// automatically discovered and connected to the DispatcherServlet.
 @ComponentScan
-//We use the @Import annotation to include our OAuth2SecurityConfiguration
-//as part of this configuration so that we can have security and oauth
-//setup by Spring
 @Import(OAuth2SecurityConfiguration.class)
-public class Application extends RepositoryRestMvcConfiguration {
+public class Application {
 
 	// The app now requires that you pass the location of the keystore and
 	// the password for your private key that you would like to setup HTTPS

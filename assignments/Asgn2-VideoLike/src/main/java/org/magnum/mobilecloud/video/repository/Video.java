@@ -1,30 +1,43 @@
 package org.magnum.mobilecloud.video.repository;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.persistence.ElementCollection;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+
 import com.google.common.base.Objects;
 
 /**
  * A simple object to represent a video and its URL for viewing.
  * 
- * You probably need to, at a minimum, add some annotations to this
- * class.
+ * You probably need to, at a minimum, add some annotations to this class.
  * 
- * You are free to add annotations, members, and methods to this
- * class. However, you probably should not change the existing
- * methods or member variables. If you do change them, you need
- * to make sure that they are serialized into JSON in a way that
- * matches what is expected by the auto-grader.
+ * You are free to add annotations, members, and methods to this class. However,
+ * you probably should not change the existing methods or member variables. If
+ * you do change them, you need to make sure that they are serialized into JSON
+ * in a way that matches what is expected by the auto-grader.
  * 
  * @author mitchell
  */
+@Entity
 public class Video {
 
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
 	private long id;
 
 	private String name;
 	private String url;
 	private long duration;
 	private long likes;
-	
+
+	@ElementCollection
+	private Set<String> likedBy = new HashSet<>();
+
 	public Video() {
 	}
 
@@ -71,11 +84,49 @@ public class Video {
 	public long getLikes() {
 		return likes;
 	}
-	
+
 	public void setLikes(long likes) {
 		this.likes = likes;
 	}
+
+	public Set<String> getLikedBy() {
+		return likedBy;
+	}
+
+	public void setLikedBy(Set<String> likedBy) {
+		this.likedBy = likedBy;
+	}
+
+	/**
+	 * Adds a user to this video's "liked by" set.
+	 * 
+	 * @param user the user wishing to like the video.
+	 * @return <code>true</code> if the user has not already liked this video.
+	 */
+	public boolean like(String user) {
+		if (this.likedBy.add(user)) {
+			this.likes += 1;
+			return true;
+		}
+		
+		return false;
+	}
 	
+	/**
+	 * Removes a user from this video's "liked by" set.
+	 * 
+	 * @param user the user wishing to unlike the video.
+	 * @return <code>true</code> if the user has not already unliked this video.
+	 */
+	public boolean unlike(String user) {
+		if (this.likedBy.remove(user)) {
+			this.likes -= 1;
+			return true;
+		}
+		
+		return false;
+	}
+
 	/**
 	 * Two Videos will generate the same hashcode if they have exactly the same
 	 * values for their name, url, and duration.

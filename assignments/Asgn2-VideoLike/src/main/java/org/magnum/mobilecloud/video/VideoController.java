@@ -113,6 +113,16 @@ public class VideoController {
 		// All good
 		videos.save(v);
 	}
+	
+	// GET /video/{id}/likedby
+	@RequestMapping(value = VIDEO_ID_PATH + "/likedby", method = RequestMethod.GET)
+	public @ResponseBody Collection<String> getVideoLikedBy(@PathVariable(ID_PARAM) long id,
+			HttpServletResponse response) {
+
+		Video v = getVideoWithResponse(id, response);
+		
+		return v == null ? null : v.getLikedBy();
+	}
 
 	@RequestMapping(value = VideoSvcApi.VIDEO_TITLE_SEARCH_PATH, method = RequestMethod.GET)
 	public @ResponseBody Collection<Video> findByTitle(
